@@ -1,4 +1,4 @@
-# Ingteraação - Armazenagem do Feedback do Entregador com Google Sheets
+# Integração - Armazenagem do Feedback do Entregador com Google Sheets
 
 ## 1 - Estrutura da Integração (Camadas, Módulos, Componentes, Serviços, Hardware, Software, Processos)
 
