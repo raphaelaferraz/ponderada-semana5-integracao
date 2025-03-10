@@ -54,6 +54,7 @@ A qualidade dessa integração foi medida com base nos seguintes critérios:
   - oauth2client 4.1.3
 
 - **Tratamento de Exceções**
+
 | **Possível Falha**                                  | **Motivo**                                          | **Solução Implementada**                                   |
 |-----------------------------------------------------|-----------------------------------------------------|-----------------------------------------------------------|
 | **Falha na autenticação com o Google Sheets**      | Credenciais incorretas ou chave de API inválida    | Verificação da existência do arquivo de credenciais e logs informativos |
@@ -74,3 +75,33 @@ Essas exceções foram implementadas no código para garantir a integridade dos 
 
 - Circuit Breaker para prevenir sobrecarga
 	- Se muitas falhas consecutivas ocorrerem, o Circuit Breaker pode bloquear novas requisições temporariamente para evitar que a API fique sobrecarregada.
+
+## 2.1 - Testes Unitários e Garantia da Qualidade
+
+Para garantir que a integração funcione corretamente, foram implementados testes unitários cobrindo os seguintes cenários:
+
+### Cenário Positivo:
+**Objetivo:** Verificar se um feedback válido é salvo corretamente no Google Sheets
+
+**Entrada:**
+-  `motoboy_id` = 10
+- `response` = "Entrega atrasada, muito ruim"
+- `category` = "Atraso"
+
+**Saída esperada:** True (feedback salvo com sucesso).
+
+### Cenário Negativo 1:
+**Objetivo:** Simular uma falha ao salvar no Google Sheets e verificar se a função retorna False corretamente.
+
+**Simulação:** O Google Sheets está indisponível ou há um erro na requisição.
+
+**Saída esperada:** False (falha tratada corretamente).
+
+### Cenário Negativo 2:
+**Objetivo:** Garantir que feedbacks vazios não sejam enviados ao Google Sheets.
+
+**Entrada**:
+- `motoboy_id` = 10
+- `response` = ""
+
+**Saída esperada:** False (erro tratado corretamente).

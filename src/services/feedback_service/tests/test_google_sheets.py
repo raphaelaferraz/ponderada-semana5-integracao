@@ -25,7 +25,7 @@ def test_save_feedback_success(feedback_data):
         )
 
         # Verificações
-        assert result is True  # Deve retornar True
+        assert result is True  
         mock_worksheet.append_row.assert_called_once()  
         print("✅ Teste de sucesso: Feedback salvo corretamente no Google Sheets.")
 
@@ -37,7 +37,7 @@ def test_save_feedback_failure(feedback_data):
     with patch("src.services.feedback_service.integration.google_sheets.client") as mock_client:
         mock_worksheet = MagicMock()
         mock_client.open.return_value.sheet1 = mock_worksheet  
-        mock_worksheet.append_row.side_effect = Exception("Erro ao salvar no Google Sheets")  # Simula erro
+        mock_worksheet.append_row.side_effect = Exception("Erro ao salvar no Google Sheets")  
 
         # Executa a função
         result = save_feedback_to_sheets(
