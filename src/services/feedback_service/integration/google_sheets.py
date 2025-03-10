@@ -40,7 +40,14 @@ def save_feedback_to_sheets(motoboy_id: int, response: str, category: str, retri
     :param category: Categoria classificada do feedback
     :param retries: Número máximo de tentativas antes de desistir
     :param delay: Tempo de espera entre tentativas (segundos)
+    :return: True se o feedback foi salvo com sucesso, False caso contrário.
     """
+
+    # ✅ **Nova verificação: bloquear feedbacks vazios**
+    if not response.strip():
+        print("❌ Erro: Feedback vazio não pode ser salvo!")
+        return False
+
     for attempt in range(retries):
         try:
             # Abrir a planilha
@@ -57,8 +64,12 @@ def save_feedback_to_sheets(motoboy_id: int, response: str, category: str, retri
             
             if attempt < retries - 1:
                 print(f"🔄 Tentando novamente... (Tentativa {attempt + 2}/{retries})")
-                time.sleep(delay)  # Espera antes de tentar de novo
+                time.sleep(delay)
                 reconnect_to_google_sheets()
             else:
                 print("❌ Todas as tentativas falharam. Feedback não salvo.")
                 return False
+
+        except Exception as e:
+            print(f"❌ Erro inesperado ao salvar no Google Sheets: {e}")
+            return False
