@@ -24,16 +24,19 @@ A integração implementada consiste em armazenar os feedbacks coletados na API 
 └────────────────────────────┘
 ```
 
-**Camadas e Módulos:**
-| **Camada**          | **Módulo**                 | **Descrição**                                  |
-|---------------------|---------------------------|----------------------------------------------|
-| **API**            | `api.py`                   | Gerencia requisições HTTP, recebe feedbacks e chama `register_feedback()` |
-| **Processamento**  | `feedback_processor.py`    | Classifica os feedbacks em categorias       |
-| **Banco de Dados** | `feedback_repository.py`   | Simula um banco de dados local e envia feedbacks ao Google Sheets |
-| **Integração**     | `google_sheets.py`         | Envia feedbacks para uma planilha no Google Sheets via API |
-| **Circuit Breaker**| `circuit_breaker.py`       | Gerencia falhas e evita sobrecarga na API   |
+**Camadas e Módulos**
 
-**Serviços e Tecnologias Utilizadas:**
+| **Camada**          | **Módulo**                      | **Descrição**                                  |
+|---------------------|--------------------------------|----------------------------------------------|
+| **API**            | `api.py`                        | Gerencia requisições HTTP, recebe feedbacks e chama `register_feedback()` |
+| **Processamento**  | `feedback_processor.py`         | Classifica os feedbacks em categorias       |
+| **Banco de Dados** | `feedback_repository.py`        | Simula um banco de dados local e envia feedbacks ao Google Sheets |
+| **Integração**     | `google_sheets.py`              | Envia feedbacks para uma planilha no Google Sheets via API |
+| **Aferição de Qualidade** | `google_sheets_quality.py` | Verifica a qualidade da integração com Google Sheets |
+| **Circuit Breaker**| `circuit_breaker.py`            | Gerencia falhas e evita sobrecarga na API   |
+
+**Serviços e Tecnologias Utilizadas**
+
 | **Componente**      | **Tecnologia**                | **Descrição**                                  |
 |---------------------|-----------------------------|----------------------------------------------|
 | **API Web**        | FastAPI                      | Framework para desenvolvimento da API       |
@@ -43,17 +46,7 @@ A integração implementada consiste em armazenar os feedbacks coletados na API 
 | **Monitoramento**  | Circuit Breaker              | Evita sobrecarga caso a API do Google Sheets falhe |
 | **Desempenho**     | `asyncio`                    | Processamento assíncrono para melhor eficiência |
 
-## 2 - Aferição de Qualidade (Tempos, Protocolos, Versões e Tratamento de Exceções)
-
-A qualidade dessa integração foi medida com base nos seguintes critérios:
-- **Tempo de processamento:** O tempo de processamento de um feedback foi medido em 10 segundos, considerando a classificação e envio para o Google Sheets. Isso significa que tal tempo não pode ultrapassar 10 segundos.
-- **Protocolos de comunicação:** A comunicação entre a API e o Google Sheets foi feita via HTTP, garantindo a integridade dos dados e a segurança da informação. Além disso, há também a utilização de JSON, para o envio do feedback, para o resgate do feedback e para a conexão entre a API de Feedback e o Google Sheets.
-- **Versões utilizadas:** 
-  - FastAPI 0.95.0
-  - gspread 5.7.1
-  - oauth2client 4.1.3
-
-- **Tratamento de Exceções**
+**Tratamento de Exceções**
 
 | **Possível Falha**                                  | **Motivo**                                          | **Solução Implementada**                                   |
 |-----------------------------------------------------|-----------------------------------------------------|-----------------------------------------------------------|
@@ -76,32 +69,56 @@ Essas exceções foram implementadas no código para garantir a integridade dos 
 - Circuit Breaker para prevenir sobrecarga
 	- Se muitas falhas consecutivas ocorrerem, o Circuit Breaker pode bloquear novas requisições temporariamente para evitar que a API fique sobrecarregada.
 
-## 2.1 - Testes Unitários e Garantia da Qualidade
+## 2 - Aferição de Qualidade (Tempos, Protocolos, Versões e Tratamento de Exceções)
 
-Para garantir que a integração funcione corretamente, foram implementados testes unitários cobrindo os seguintes cenários:
+A qualidade dessa integração foi medida com base nos seguintes critérios:
 
-### Cenário Positivo:
-**Objetivo:** Verificar se um feedback válido é salvo corretamente no Google Sheets
+- **Tempo de processamento:** O tempo de processamento de um feedback foi medido em 10 segundos, considerando a classificação e envio para o Google Sheets. Isso significa que tal tempo não pode ultrapassar 10 segundos.
+- **Protocolos de comunicação:** A comunicação entre a API e o Google Sheets foi feita via HTTP, garantindo a integridade dos dados e a segurança da informação. Além disso, há também a utilização de JSON para o envio e resgate do feedback.
+- **Versões utilizadas:** 
+  - **FastAPI:** 0.95.0
+  - **gspread:** 5.7.1
+  - **oauth2client:** 4.1.3
+  - **Python:** 3.9
 
-**Entrada:**
--  `motoboy_id` = 10
-- `response` = "Entrega atrasada, muito ruim"
-- `category` = "Atraso"
+**2.1 - Controle de Versões e Sincronismo**
+A função de aferição da qualidade também realiza **o controle de versões** das dependências da integração, garantindo que **o código esteja atualizado** e **compatível** com as versões recomendadas.
 
-**Saída esperada:** True (feedback salvo com sucesso).
+| **Dependência**  | **Versão Atual** | **Versão Recomendada** | **Status** |
+|-----------------|----------------|----------------------|------------|
+| Python         | `sys.version`    | 3.9                  | ✔️ Atualizado/⚠️ Desatualizado |
+| FastAPI        | `fastapi.__version__` | 0.95.0             | ✔️ Atualizado/⚠️ Desatualizado |
+| gspread        | `gspread.__version__` | 5.7.1             | ✔️ Atualizado/⚠️ Desatualizado |
+| oauth2client   | `oauth2client.__version__` | 4.1.3            | ✔️ Atualizado/⚠️ Desatualizado |
 
-### Cenário Negativo 1:
-**Objetivo:** Simular uma falha ao salvar no Google Sheets e verificar se a função retorna False corretamente.
+Se alguma versão estiver **desatualizada**, um alerta será gerado no log e registrado na segunda aba da planilha `"Verificação de Qualidade"`.
 
-**Simulação:** O Google Sheets está indisponível ou há um erro na requisição.
+**2.2 - Testes Unitários e Garantia da Qualidade**
+Para garantir que a integração funcione corretamente, foram implementados **testes unitários** cobrindo os seguintes cenários:
 
-**Saída esperada:** False (falha tratada corretamente).
+**Cenário Positivo 1: Feedback salvo corretamente no Google Sheets**
+- **Objetivo:** Verificar se um feedback válido é salvo corretamente na planilha.
+- **Entrada:**
+  - `motoboy_id = 10`
+  - `response = "Entrega atrasada, muito ruim"`
+  - `category = "Atraso"`
+- **Saída esperada:** `True` (feedback salvo com sucesso).
 
-### Cenário Negativo 2:
-**Objetivo:** Garantir que feedbacks vazios não sejam enviados ao Google Sheets.
+**Cenário Positivo 2: Verificação da Integração**
+- **Objetivo:** Testar se a API do Google Sheets está acessível e funcionando.
+- **Saída esperada:** `api_accessible = True`, `write_test_successful = True`.
 
-**Entrada**:
-- `motoboy_id` = 10
-- `response` = ""
+---
 
-**Saída esperada:** False (erro tratado corretamente).
+**Cenário Negativo 1: Falha ao salvar no Google Sheets**
+- **Objetivo:** Simular um erro ao salvar no Google Sheets e verificar se a função retorna `False`.
+- **Simulação:** A API do Google Sheets está indisponível.
+- **Saída esperada:** `False` (falha tratada corretamente).
+
+**Cenário Negativo 2: Feedback vazio não pode ser salvo**
+- **Objetivo:** Garantir que feedbacks vazios não sejam enviados ao Google Sheets.
+- **Entrada**:
+  - `motoboy_id = 10`
+  - `response = ""`
+- **Saída esperada:** `False` (erro tratado corretamente).
+

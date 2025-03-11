@@ -1,6 +1,8 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
+from .google_sheets_quality import verify_google_sheets_integration
+
 
 # Define o caminho absoluto para o arquivo JSON
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
@@ -42,6 +44,13 @@ def save_feedback_to_sheets(motoboy_id: int, response: str, category: str, retri
     :param delay: Tempo de espera entre tentativas (segundos)
     :return: True se o feedback foi salvo com sucesso, False caso contrário.
     """
+
+    verification_result = verify_google_sheets_integration()
+    print(f"🔍 Verificação do Google Sheets: {verification_result}")
+
+    if not verification_result["api_accessible"] or not verification_result["write_test_successful"]:
+        print("❌ A integração com Google Sheets falhou! Feedback não será salvo.")
+        return False
 
     if not response.strip():
         print("❌ Erro: Feedback vazio não pode ser salvo!")
