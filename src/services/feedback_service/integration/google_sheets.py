@@ -43,18 +43,15 @@ def save_feedback_to_sheets(motoboy_id: int, response: str, category: str, retri
     :return: True se o feedback foi salvo com sucesso, False caso contrário.
     """
 
-    # ✅ **Nova verificação: bloquear feedbacks vazios**
     if not response.strip():
         print("❌ Erro: Feedback vazio não pode ser salvo!")
         return False
 
     for attempt in range(retries):
         try:
-            # Abrir a planilha
             spreadsheet = client.open(SPREADSHEET_NAME)
             worksheet = spreadsheet.sheet1
 
-            # Salvar os dados na planilha
             worksheet.append_row([motoboy_id, response, category])
             print("✅ Feedback salvo no Google Sheets com sucesso!")
             return True
